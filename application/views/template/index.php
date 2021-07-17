@@ -93,6 +93,14 @@
         'info': true,
         'autoWidth': false
       })
+      <?php
+      $uri = $this->uri->segment(2);
+      if($uri == "hasil_prediksi"){
+        foreach ($this->db->get('kecamatan')->result() as $key => $valu) {?>
+          $('#example<?=$valu->id_kecamatan;?>').DataTable()
+        <?php }
+      }
+      ?>
     })
   </script>
 

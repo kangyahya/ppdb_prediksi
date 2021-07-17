@@ -30,7 +30,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3 col-sm-4">
-                                    <button type="submit" class="btn btn-primary col-sm-4"><i class="fa fa-search"></i> Cari</button>
+                                    <button type="submit" class="btn btn-primary col-sm-4" name="submitted" value="hitung"><i class="fa fa-search"></i> Cari</button>
                                 </div>
                             </div>
                             <br>
@@ -68,84 +68,138 @@
 
                     <div class="box-body">
                         <div class="table-responsive">
-                            <table id="example1" class="table table-bordered table-striped table-hover">
+                            <table id="example2" class="table table-bordered table-striped table-hover text-center">
                                 <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Tahun Akademik </th>
-                                        <th>Kecamatan</th>
-                                        <th>Prediksi</th>
+                                    <tr class="text-center">
+                                        <th rowspan="2">Tahun Akademik </th>
+                                        <th colspan="<?=$kecamatan->num_rows()?>">Kecamatan</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                      <?php if($kecamatan->num_rows() > 0 ){
+                                         foreach($kecamatan->result() as $key => $value) { ?>
+                                        <th><?php echo $value->kecamatan ?></th>
+                                      <?php } } ?>
                                     </tr>
                                 </thead>
-
                                 <tbody>
+                                  <?php foreach ($tahun_akademik as $key => $value) { ?>
+                                    <tr class="text-center">
+                                      <td><?php echo $value->tahun_akademik; ?></td>
+                                      <?php
+                                      foreach($kecamatan->result() as $key => $kec) {
+                                      $dist = $this->db->query("SELECT count(no_form) as qty FROM ppdb WHERE tahun_akademik = '$value->tahun_akademik' AND id_kecamatan = '$kec->id_kecamatan'");
+                                      if ($dist->num_rows() > 0) {
+                                      foreach ($dist->result() as $key => $dis) {?>
+                                        <td><?php
+                                          echo $dis->qty;  ?></td>
+                                      <?php } }else{
+                                        echo 0;
+                                        }
+                                      }
+                                      ?>
+
+                                    </tr>
+                                  <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    </div>
+                    <?php
+                    $submitted = $this->input->post('submitted');
+                    if (!empty($submitted)):
+                      if($submitted == "hitung"): ?>
+                    <div class="box box-primary">
+                      <div class="box-header">
+                        <h2>Dicari</h2>
+                      </div>
+                      <div class="box-body">
+                          <div class="table-responsive">
+                              <table id="example1" class="table table-bordered table-striped table-hover text-center">
+                                  <thead>
+                                      <tr class="text-center">
+                                          <th rowspan="2">Tahun Akademik </th>
+                                          <th colspan="<?=$kecamatan->num_rows()?>">Kecamatan</th>
+                                      </tr>
+                                      <tr class="text-center">
+                                        <?php if($kecamatan->num_rows() > 0 ){
+                                           foreach($kecamatan->result() as $key => $value) { ?>
+                                          <th><?php echo $value->kecamatan ?></th>
+                                        <?php } } ?>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
                                     <?php
-                                    $no = 1;
-                                    foreach ($ppdb as $p) : ?>
-                                        <tr>
-                                            <td align="center"><?= $no++; ?></td>
-                                            <td><?php echo $p['tahun_akademik']; ?></td>
-                                            <td><?php echo $p['kecamatan'] ?></td>
-                                            <td><?=$maxi->qty?></td>
-                                        </tr>
-                                        </tfoot>
-                                    <?php endforeach; ?>
-                            </table>
-                        </div>
+                                    $max = $this->db->query("SELECT tahun_akademik from ppdb ORDER BY tahun_akademik DESC limit 1")->row();
+                                    for($i = substr($max->tahun_akademik, 0, 4)+1; $i <= substr($this->input->post('tahun_akademik'),0,4); $i++){ ?>
+                                      <tr>
+                                        <td><?php echo $i.'/'.($i+1); ?></td>
+                                        <?php if($kecamatan->num_rows() > 0 ){
+                                           foreach($kecamatan->result() as $key => $value) { ?>
+                                          <td>?</td>
+                                        <?php } } ?>
+                                      </tr>
+                                    <?php } ?>
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
                     </div>
-                </div>
-            </div>
-            <!--
-            <div class="col-xs-12">
-                <div class="box box-primary">
-                    <div class="box-header">
-                        <h3 class="box-title">Sekolah</h3>
-                        <ul class="nav pull-right">
-                            <form method="post" target="_blank" action="<?php // echo site_url('export/excel_pendaftaradmin/') ?>" type="button" class="btn-btn-success">
-                                <input type="hidden" name="filter" value="<?= $filter ?>">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fa fa-send"></i> Export
-                                </button>
-                            </form>
-                        </ul>
-                        <ul class="nav pull-right" style="padding-right:3px;">
-                            <form method="post" target="_blank" action="<?php //echo site_url('laporan/print_pendaftar/') ?>">
-                                <input type="hidden" name="filter" value="<?= $filter ?>">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-print"></i> Print
-                                </button>
-                            </form>
-                        </ul>
-                    </div>
-
-                    <div class="box-body">
-                        <div class="table-responsive">
-                            <table id="example1" class="table table-bordered table-striped table-hover">
+                    <?php foreach($kecamatan->result() as $key => $kec): ?>
+                    <div class="box box-primary">
+                      <div class="box-header">
+                        <h2><?php echo $kec->kecamatan; ?></h2>
+                      </div>
+                      <div class="box-body">
+                          <div class="table-responsive">
+                              <table id="example<?=$kec->id_kecamatan;?>" class="table table-bordered table-striped table-hover text-center">
                                 <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Kode Sekolah</th>
-                                        <th>Nama Sekolah</th>
-                                        <th>Tahun Akademik</th>
-                                        <th>Jumlah Pendaftar</th>
-                                    </tr>
+                                  <tr>
+                                    <th>Tahun Akademik</th>
+                                    <th>Distribusi (Y)</th>
+                                    <th>X</th>
+                                    <th>XY</th>
+                                    <th>X<sup>2</sup></th>
+                                  </tr>
                                 </thead>
-
                                 <tbody>
-                                    <tr>
-                                        <td align="center"></td>
-                                        <td align="center"></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td align="center"></td>
-                                    </tr>
-                                    </tfoot>
-                            </table>
-                        </div>
+                                  <?php
+                                  $distr = $this->db->query("select * from ppdb where id_kecamatan = ?",$kec->id_kecamatan)->result();
+                                  $maxi = $this->db->query("select sum(no_form) as qty, count(id_kecamatan) as total from ppdb where id_kecamatan = ?", $kec->id_kecamatan)->row();
+                                  if ($maxi->total %2 == 0) {
+                                    $x = $maxi->total - $maxi->total - $maxi->total + 1;
+                                    $tam = 2;
+                                  }else{
+                                    $x = $maxi->total - $maxi->total - ($maxi->total/2) + 0.5;
+                                    $tam = 1;
+                                  }
+                                  $jumlah_x = 0;
+                                        $jumlah_y = 0;
+                                        $jumlah_xy = 0;
+                                        $jumlah_xx = 0;
+                                        foreach($distr as $dis){
+                                        $jumlah_x += $x;
+                                        $jumlah_y += 1; //$dis->dist;
+                                        $jumlah_xy += 1;// ($x * $dis->dist);
+									                      $jumlah_xx += ($x * $x);
+                                  ?>
+                                  <tr>
+                                       <td><?=$dis->tahun_akademik?></td>
+                                       <td></td>
+                                       <td><?=$x?></td>
+                                       <td></td>
+                                       <td><?=$x * $x?></td>
+                                   </tr>
+                                   <?php $x+=$tam; }?>
+                                </tbody>
+                              </table>
+                          </div>
+                      </div>
                     </div>
-                </div>
+                  <?php endforeach; ?>
+                    <?php endif; endif; ?>
+
             </div>
-        -->
         </div>
     </section>
 </div>
