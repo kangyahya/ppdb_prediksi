@@ -34,7 +34,7 @@
                             <br>
                                 <img style="display:block; margin-left:auto; margin-right:auto" src="<?php echo base_url(); ?>assets/dist/img/logo/smp.png" width="135px">
                             <br>
-                                
+
                                 <h4 style="text-align:center; font-weight:bold; font-family:Segoe UI, sans-serif">Jl. Kalitanjung P. Grenjeng </h4>
                             </div>
                             </div>
@@ -97,6 +97,20 @@
                     <a href="<?php echo site_url('mengelola_ppdb'); ?>" class="small-box-footer">Selengkapnya <i class="fa fa-arrow-circle-right"></i></a>
                 </div>
             </div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-sm-12 col-md-12 col-xl-12">
+            <!-- BAR CHART -->
+            <div class="card card-success">
+              <div class="card-header">
+                <h3 class="card-title">Bar Chart</h3>
+              <div class="card-body">
+                <div class="chart">
+                <canvas id="canvas" height="450" width="600"></canvas>
+                </div>
+              </div>
+              <!-- /.card-body -->
+          </div>
         </div>
     </section>
 </div>

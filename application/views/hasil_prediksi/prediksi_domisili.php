@@ -73,6 +73,7 @@
                                     <tr class="text-center">
                                         <th rowspan="2">Tahun Akademik </th>
                                         <th colspan="<?=$kecamatan->num_rows()?>">Kecamatan</th>
+                                        <th rowspan="2">Total</th>
                                     </tr>
                                     <tr class="text-center">
                                       <?php if($kecamatan->num_rows() > 0 ){
@@ -82,18 +83,43 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                  <?php foreach ($tahun_akademik as $key => $value) { ?>
+                                  <?php
+                                  $total_qty_ta = 0;
+                                  foreach ($tahun_akademik as $key => $value) { ?>
                                     <tr class="text-center">
                                       <td><?php echo $value->tahun_akademik; ?></td>
                                       <?php
+                                      $total_qty = 0;
+                                      $total_qty_t = 0;
                                       foreach($kecamatan->result() as $key => $kec) {
                                       $dist = $this->db->query("SELECT COUNT(no_form) as qty FROM `kecamatan` LEFT JOIN `ppdb` ON `ppdb`.`id_kecamatan` = `kecamatan`.`id_kecamatan` WHERE tahun_akademik = '$value->tahun_akademik' AND kecamatan.id_kecamatan = '$kec->id_kecamatan'");
-                                      foreach ($dist->result() as $key => $dis) {?>
+
+                                      foreach ($dist->result() as $key => $dis) {
+                                        $total_qty += $dis->qty;
+                                        ?>
                                         <td><?php echo $dis->qty;  ?></td>
-                                      <?php } } ?>
+                                      <?php }
+                                    } ?>
+                                      <td><?=$total_qty?></td>
                                     </tr>
                                   <?php } ?>
                                 </tbody>
+                                <tfoot>
+                                  <tr>
+                                  <th>Total</th>
+                                  <?php
+                                  $total_qty_ta = 0;
+                                  foreach($kecamatan->result() as $key => $kec) {
+                                  $dist = $this->db->query("SELECT COUNT(no_form) as qty FROM `kecamatan` LEFT JOIN `ppdb` ON `ppdb`.`id_kecamatan` = `kecamatan`.`id_kecamatan` WHERE kecamatan.id_kecamatan = '$kec->id_kecamatan'");
+                                  foreach ($dist->result() as $key => $dis) {
+                                    $total_qty_ta += $dis->qty;
+                                    ?>
+                                    <th><?php echo $dis->qty;  ?></th>
+                                  <?php }
+                                } ?>
+                                <th><?=$total_qty_ta?></th>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -138,10 +164,12 @@
                           </div>
                       </div>
                     </div>
-                    <?php foreach($kecamatan->result() as $key => $kec): ?>
+                    <?php
+                    $maxi = $this->db->query("SELECT distinct tahun_akademik FROM ppdb")->num_rows();
+                    foreach($kecamatan->result() as $key => $kec): ?>
                     <div class="box box-primary">
                       <div class="box-header">
-                        <h2><?php echo $kec->kecamatan; ?></h2>
+                        <h2>Domisili Kecamatan <?php echo $kec->kecamatan; ?></h2>
                       </div>
                       <div class="box-body">
                           <div class="table-responsive">
@@ -157,7 +185,7 @@
                                 </thead>
                                 <tbody>
                                   <?php
-                                  $maxi = $this->db->query("SELECT distinct tahun_akademik FROM ppdb")->num_rows();
+
                                   if($maxi %2 == 0){
                                     $x = ($maxi - $maxi - $maxi) + 1;
                                     $tam = 2;
@@ -169,6 +197,7 @@
                                   $jumlah_y = 0;
                                   $jumlah_xy = 0;
                                   $jumlah_xx = 0;
+                                  $temp_array = [];
                                   foreach ($tahun_akademik as $key => $value) {
 
                                     $dist = $this->db->query("SELECT count(no_form) as qty FROM kecamatan LEFT JOIN ppdb ON ppdb.id_kecamatan = kecamatan.id_kecamatan WHERE tahun_akademik = '$value->tahun_akademik' AND ppdb.id_kecamatan = '$kec->id_kecamatan'");
@@ -176,6 +205,13 @@
                                     $jumlah_y += $dist->row()->qty;
                                     $jumlah_xy += $dist->row()->qty * $x;
                                     $jumlah_xx += $x * $x;
+                                    $temp = [
+                                      'ta' => $value->tahun_akademik,
+                                      'dist' => $dist->row()->qty,
+                                      'x' => $x,
+                                      'xy' => $dist->row()->qty * $x,
+                                      'xx' => $x * $x,
+                                    ];
                                      ?>
                                     <tr class="text-center">
                                       <td><?php echo $value->tahun_akademik; ?></td>
@@ -184,7 +220,10 @@
                                        <td><?=$dist->row()->qty * $x?></td>
                                        <td><?=$x * $x?></td>
                                     </tr>
-                                  <?php $x+=$tam; } ?>
+                                  <?php $x+=$tam;
+
+                                  array_push($temp_array, $temp);
+                                } ?>
                                 </tbody>
                                 <tfoot>
                                     <tr>
@@ -199,34 +238,52 @@
                           </div>
                       </div>
                     </div>
-                    <pre>Persamaan : Y = a + b(x) </br>Persamaan : Y = <?=($jumlah_y !=0 && $jumlah_xy != 0)?($jumlah_y / $maxi) .' + '.$jumlah_xy/$jumlah_xx .' (x)' : ($jumlah_y / $maxi) ." + 0 (X)";?></pre>
                     <div class="box box-primary">
+                      <div class="box-header">
+                        <h2>Mape Domisili Kecamatan <?=$kec->kecamatan;?></h2>
+                      </div>
                       <div class="box-body">
                           <div class="table-responsive">
                               <table id="example<?=$kec->id_kecamatan;?>" class="table table-bordered table-striped table-hover text-center">
                                 <thead>
                                 <tr class="text-center">
                                     <th>Tahun</th>
-                                    <th>X</th>
-                                    <th>Hasil Forecasting Domisili <?=$kec->kecamatan?></th>
+                                    <th>Aktual (A)</th>
+                                    <th>Prediksi (F)</th>
+                                    <th>Deviation ( A-F )</th>
+                                    <th>Absolute Deviation ( |A-F| )</th>
+                                    <th>Absolute Percentage Error</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $max = $this->db->query("select tahun_akademik from ppdb ORDER BY tahun_akademik DESC limit 1")->row(); ?>
-                                    <?php for($i = substr($max->tahun_akademik, 0, 4)+1; $i <= substr($this->input->post('tahun_akademik'),0,4); $i++){?>
-                                    <tr>
-                                        <td><?php echo $i.'/'.($i+1); ?></td>
-                                        <td><?=$x?></td>
-										                    <td><?=(($jumlah_y != 0 && $jumlah_xy != 0)?($jumlah_y / $maxi) + (($jumlah_xy/$jumlah_xx)*$x): ($jumlah_y / $maxi) + 0)?></td>
-                                    </tr>
-                                    <?php $x+=$tam; }?>
+                                    <?php
+                                    $max_a = 0;
+                                    foreach ($temp_array as $key => $vaue) { ?>
+                                      <tr>
+                                        <td><?=$vaue['ta']?></td>
+                                        <td><?=$vaue['dist']?></td>
+                                        <td><?=$pred = (($jumlah_y != 0 ) ? ($jumlah_y / $maxi) : 0 + ((($jumlah_xy != 0 ) ? $jumlah_xy/$jumlah_xx : 0 )*$vaue['x']))?></td>
+                                        <td><?=$vaue['dist'] - $pred;?></td>
+                                        <td><?=abs($vaue['dist'] - $pred);?></td>
+                                        <td><?php
+                                                $a = ($vaue['dist'] != 0 ) ? (abs((($vaue['dist'] - $pred) / $vaue['dist'])) *100):0;
+                                                echo number_format($a,2)."%";
+                                                $max_a += ($a);
+                                                ?></td>
+                                      </tr>
+                                    <?php }
+                                    ?>
                                 </tbody>
+                                <tfoot>
+                                  <tr>
+                                    <th colspan="5">MAPE <?=$kec->kecamatan;?></th>
+                                    <th><?=number_format($max_a/$maxi,2)."%";?></th>
+                                  </tr>
+                                </tfoot>
                               </table>
                           </div>
                       </div>
                     </div>
-
-
                   <?php endforeach; ?>
                     <?php endif; endif; ?>
 

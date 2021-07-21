@@ -69,7 +69,24 @@
                     <a href="" class="small-box-footer">Selengkapnya <i class="fa fa-arrow-circle-right"></i></a>
                 </div>
             </div>
+            <div class="row">
+              <div class="col-12 col-sm-12 col-md-12 col-xl-12">
+                <!-- BAR CHART -->
+                <div class="card card-success">
+                  <div class="card-header">
+                    <h3 class="card-title">Bar Chart</h3>
+                  <div class="card-body">
+                    <div class="chart">
+                    <canvas id="canvas" height="450" width="600"></canvas>
+                    </div>
+                  </div>
+                  <!-- /.card-body -->
+              </div>
+            </div>
+          </div>
+        </div>
             <!-- ./col -->
         </div>
+
     </section>
 </div>

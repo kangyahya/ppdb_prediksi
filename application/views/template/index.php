@@ -61,6 +61,7 @@
   <!-- FastClick -->
   <script src="<?php echo base_url(); ?>assets/bower_components/fastclick/lib/fastclick.js"></script>
   <!-- AdminLTE App -->
+  <script src="<?php echo base_url(); ?>assets/bower_components/chart.js/Chart.js"></script>
   <script src="<?php echo base_url(); ?>assets/dist/js/adminlte.min.js"></script>
   <!-- AdminLTE for demo purposes -->
   <script src="<?php echo base_url(); ?>assets/dist/js/demo.js"></script>
@@ -80,7 +81,54 @@
       $('.sidebar-menu').tree()
     })
   </script>
+  <script>
+  <?php
+  $uri = $this->uri->segment(1);
+  if ($uri == "dashboard") {
+    $tahun = $this->db->query("SELECT distinct tahun_akademik from ppdb");
+    $kecamatan = $this->db->get('kecamatan');
+    ?>
+    var randomScalingFactor = function(){ return Math.round(Math.random()*100)};
 
+    	var barChartData = {
+    		labels : [<?php foreach ($tahun->result() as $key => $value) {
+          echo substr($value->tahun_akademik,0,4).substr($value->tahun_akademik,5,4).",";
+        } ?>],
+    		datasets : [
+
+          <?php  foreach($kecamatan->result() as $key => $kec) {
+
+            $asal = 200;
+
+
+            ?>
+            {
+      				fillColor : "rgba(220,<?=$asal++?>,220,0.5)",
+      				strokeColor : "rgba(220,<?=$asal++?>,220,0.8)",
+      				highlightFill: "rgba(220,<?=$asal++?>,220,0.75)",
+      				highlightStroke: "rgba(220,<?=$asal++?>,220,1)",
+      				data : [
+                <?php
+                foreach ($tahun->result() as $key => $value) {
+                $dist = $this->db->query("SELECT COUNT(no_form) as qty FROM `kecamatan` LEFT JOIN `ppdb` ON `ppdb`.`id_kecamatan` = `kecamatan`.`id_kecamatan` WHERE tahun_akademik = '$value->tahun_akademik' AND kecamatan.id_kecamatan = '$kec->id_kecamatan'");
+                 foreach($dist->result() as $key => $value){echo $value->qty;} ?>,
+                <?php } ?>
+              ]
+      			},
+            <?php }?>
+    		]
+
+    	}
+    	window.onload = function(){
+    		var ctx = document.getElementById("canvas").getContext("2d");
+    		window.myBar = new Chart(ctx).Bar(barChartData, {
+    			responsive : true
+    		});
+    	}
+  <?php }
+
+  ?>
+  </script>
   <!-- Datatable -->
   <script>
     $(function() {
